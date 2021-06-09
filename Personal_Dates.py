@@ -21,18 +21,18 @@ def find_shelf(doc_number):
         if doc_number in values:
             print(f"Номер полки: {keys}")
             return keys
-    print(f"Полка с номером документа '{doc_number}' отсутствует")
+    print(f"Полка с номером документа {doc_number} отсутствует")
     return f'Error'
 
 
 def get_list():
     """ функция, которая выведет список всех документов в формате passport "2207 876234" "Василий Гупкин"
     """
-    result = " "
+    result = ""
     for document in documents:
-        result += f'\n{document["type"]} "{document["number"]}" "{document["name"]}"'
+        result += f'{document["type"]} "{document["number"]}" "{document["name"]}"\n'
     print(result)
-    return documents
+    return result
 
 
 def add_new_document():
@@ -47,54 +47,50 @@ def add_new_document():
         directories[shelf].append(doc_new['number'])
         documents.append(doc_new)
         print(f"Документ с номером {doc_new['number']} добавлен на полку {shelf}")
-        return directories[shelf], doc_new['number']
-    else:
-        print(f"Полка с номером {shelf} не существует")
-        return f'Error'
+        return directories, documents, True
+    print(f"Полка с номером {shelf} не существует")
+    return directories, documents, False
 
 def move_shelves():
     """функция, которая спросит номер документа и целевую полку и переместит его с текущей полки на целевую.
     """
     doc_number = input("Введите номер документа: ")
-    doc_not_found = f"Документ с номером {doc_number} не найден"
     for keys, values in directories.items():
         if doc_number in values:
             shelf = input("Введите номер целевой полки: ")
-            incorrect_shelf = f"Полка с номером {shelf} не существует"
             if shelf in directories.keys():
                 directories[shelf].append(doc_number)
-                doc_move = f"Документ {doc_number} перемещен на полку {shelf}"
-                return doc_move
-            return incorrect_shelf
-    return doc_not_found
-    # Документ перемещается на новую полку но со старой не получается убрать
+                values.remove(doc_number)
+                print(f"Документ {doc_number} перемещен на полку {shelf}")
+                return directories, True
+            print(f"Полка с номером {shelf} не существует")
+            return directories, False
+    print(f"Документ с номером {doc_number} не найден")
+    return directories, False
 
-
-def add_new_shelf(add_shelf):
+def add_new_shelf():
     """функция, которая спросит номер новой полки и добавит ее в перечень.
     """
-    #add_shelf = input("Введите номер новой полки: ")
-    for _ in directories.keys():
-        if add_shelf not in directories.keys():
-            result = directories.setdefault(add_shelf, [])
-            print(f'Полка с номером {add_shelf} добавлена в перечень')
-            return directories
-        print(f"Полка с номером {add_shelf} уже существует")
-        return directories
+    add_shelf = input("Введите номер новой полки: ")
+    if add_shelf not in directories.keys():
+        directories[add_shelf] = []
+        print(f'Полка с номером {add_shelf} добавлена в перечень')
+        return add_shelf, True
+    print(f"Полка с номером {add_shelf} уже существует")
+    return add_shelf, False
 
-
-def del_number_doc(doc_number):
+def del_number_doc():
     """ функция, которая спросит номер документа и удалит его из каталога и из перечня полок.
     """
-    #doc_number = input("Введите номер документа: ")
+    doc_number = input("Введите номер документа: ")
     for document in documents:
-        for keys, values in document.items():
-            if document[keys] == doc_number:
-                del document[keys]
-                for number in directories:
-                    if doc_number in directories[number]:
-                        del directories[number]
-                        print(f'Документ {doc_number} удален из каталога и из перечня полок')
-                        return documents, directories
+        doc = document['number']
+        if doc == doc_number:
+            documents.remove(document)
+            for number, doc in directories.items():
+                if doc_number in doc:
+                    doc.remove(doc_number)
+                    print(f'Документ {doc_number} удален из каталога и из перечня полок')
+                    return documents, directories, True
     print(f"Документа с номером {doc_number} не существует")
-    return f'Error'
+    return documents, directories, False
